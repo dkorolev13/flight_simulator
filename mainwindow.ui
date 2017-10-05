@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>883</width>
+    <height>795</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Имитатор фоноцелевой обстановки</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_12">
+    <item row="0" column="1">
+     <layout class="QGridLayout" name="gridLayout_11">
+      <item row="4" column="0">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="0">
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="title">
+         <string>Текущее положение ЛА</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_10">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_24">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Sy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="Sy_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="maximum">
+            <double>99999999.989999994635582</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_23">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Sx</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="Sx_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="maximum">
+            <double>99999999.989999994635582</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_26">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>H</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="H_doubleSpinBox_2">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="maximum">
+            <double>99999999.989999994635582</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_28">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Путевая скорость</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="w_doubleSpinBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="title">
+         <string>Угловое положение ЛА</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Крен</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="Tangazh_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="suffix">
+            <string>°</string>
+           </property>
+           <property name="minimum">
+            <double>-180.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>10.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Тангаж</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="Kren_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="suffix">
+            <string>°</string>
+           </property>
+           <property name="minimum">
+            <double>-180.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Курс</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="Kurs_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="suffix">
+            <string>°</string>
+           </property>
+           <property name="maximum">
+            <double>360.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label_27">
+        <property name="text">
+         <string>Время полета</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="time_label">
+        <property name="font">
+         <font>
+          <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>00:00:000</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="RUNButton">
+        <property name="text">
+         <string>START</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Pause_pushButton">
+        <property name="text">
+         <string>PAUSE</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="Tab">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Страница</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_13">
+        <item row="1" column="0">
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="title">
+             <string>Параметры ОСН</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="1" column="1">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>N1</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QDoubleSpinBox" name="N1_doubleSpinBox">
+               <property name="suffix">
+                <string> пикс</string>
+               </property>
+               <property name="decimals">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <double>1920.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>480.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>N2</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QDoubleSpinBox" name="N2_doubleSpinBox">
+               <property name="suffix">
+                <string> пикс</string>
+               </property>
+               <property name="decimals">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <double>1080.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>640.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2">
+              <widget class="QDoubleSpinBox" name="Fokus_doubleSpinBox">
+               <property name="suffix">
+                <string> мм</string>
+               </property>
+               <property name="decimals">
+                <number>3</number>
+               </property>
+               <property name="singleStep">
+                <double>0.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>3.061000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="2">
+              <widget class="QDoubleSpinBox" name="Pixel_doubleSpinBox">
+               <property name="minimumSize">
+                <size>
+                 <width>86</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="suffix">
+                <string> мм</string>
+               </property>
+               <property name="decimals">
+                <number>6</number>
+               </property>
+               <property name="singleStep">
+                <double>0.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.004650000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" rowspan="2">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Размер матрицы:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Фокусное расстояние</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Размер пикселя</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Исходное положение ЛА</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_10">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Lon </string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="Lon_doubleSpinBox">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="suffix">
+                <string> м</string>
+               </property>
+               <property name="maximum">
+                <double>99999999.989999994635582</double>
+               </property>
+               <property name="singleStep">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>H</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="Lat_doubleSpinBox">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="suffix">
+                <string> м</string>
+               </property>
+               <property name="maximum">
+                <double>99999999.989999994635582</double>
+               </property>
+               <property name="singleStep">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="H_doubleSpinBox">
+               <property name="suffix">
+                <string> м</string>
+               </property>
+               <property name="maximum">
+                <double>15000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>300.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_9">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Lat</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="groupBox_6">
+            <property name="title">
+             <string>Параметры модели</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_5">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Кол-во итераций</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="K_spinBox">
+               <property name="maximum">
+                <number>100000</number>
+               </property>
+               <property name="value">
+                <number>1000</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Интервал между отсчетами (с)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="deltaT_doubleSpinBox">
+               <property name="value">
+                <double>0.200000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>Размер площади обход, Dx (м)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="Dx_doubleSpinBox">
+               <property name="maximum">
+                <double>10000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>400.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_18">
+               <property name="text">
+                <string>Размер площади обход, Dy (м)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QDoubleSpinBox" name="Dy_doubleSpinBox">
+               <property name="maximum">
+                <double>10000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>500.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_16">
+               <property name="text">
+                <string>Кол-во периодов, dax</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QDoubleSpinBox" name="dax_doubleSpinBox">
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_19">
+               <property name="text">
+                <string>Кол-во периодов, day</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QDoubleSpinBox" name="day_doubleSpinBox">
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>Начальная фаза, градус, ϕx</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QDoubleSpinBox" name="phix0_doubleSpinBox">
+               <property name="minimum">
+                <double>-360.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>360.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>-90.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Начальная фаза, градус,ϕy</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QDoubleSpinBox" name="phiy0_doubleSpinBox">
+               <property name="minimum">
+                <double>-360.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>360.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Коэффициент по крену</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="1">
+              <widget class="QSpinBox" name="c_spinBox">
+               <property name="value">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0">
+              <widget class="QLabel" name="label_25">
+               <property name="text">
+                <string>Радиус поворота</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="1">
+              <widget class="QDoubleSpinBox" name="cS_doubleSpinBox">
+               <property name="minimum">
+                <double>-360.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>360.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.010000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="1" rowspan="3">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>Эталонное изображение</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <item row="0" column="0">
+              <widget class="QLineEdit" name="leFileName">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QToolButton" name="openButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QRadioButton" name="Route_1_radioButton">
+              <property name="text">
+               <string>Маршрут 1</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="Route_2_radioButton">
+              <property name="text">
+               <string>Маршрут 2</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="1">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>334</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Площадь обхода</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_16">
+        <item row="0" column="0">
+         <widget class="myGraphicsView" name="mygraphicsview" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Траектория</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="customplot_S" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Скорость</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_9">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="customplot_W" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_5">
+       <attribute name="title">
+        <string>Курс</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="customplot_Kurs" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_6">
+       <attribute name="title">
+        <string>Крен, тангаж</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_15">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="customplot_Kren" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>myGraphicsView</class>
+   <extends>QWidget</extends>
+   <header location="global">mygraphicsview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

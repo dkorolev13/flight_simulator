@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QFile>
 #include <QFileDialog>
 #include <QtCore/qmath.h>
 #include <QMessageBox>
@@ -10,6 +9,7 @@
 #include <QTextStream>
 #include <QTime>
 #include "gdal_priv.h"
+//#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -71,21 +71,27 @@ void MainWindow::on_openButton_clicked()
     //Координата левого нижнего угла эталона по широте в метрах
     double bottomLeftAngleLat = topLeftAngleLat + (img.rows) * pixSizeLat;
 
-    //Координаты центра эталона в метрах
-    ui->Lon_doubleSpinBox->setRange(topLeftAngleLon, topRightAngleLon);
-    ui->Lat_doubleSpinBox->setRange(bottomLeftAngleLat, topLeftAngleLat);
+//    //Координаты центра эталона в метрах
+//    ui->Lon_doubleSpinBox->setRange(topLeftAngleLon, topRightAngleLon);
+//    ui->Lat_doubleSpinBox->setRange(bottomLeftAngleLat, topLeftAngleLat);
 
-    ui->Lon_doubleSpinBox->setValue(topLeftAngleLon + ((topRightAngleLon - topLeftAngleLon) / 2)); // центр снимка по долготе
-    ui->Lat_doubleSpinBox->setValue(topLeftAngleLat - ((topLeftAngleLat - bottomLeftAngleLat)/ 2)); // центр снимка по широте
+//    ui->Lon_doubleSpinBox->setValue(topLeftAngleLon + ((topRightAngleLon - topLeftAngleLon) / 2)); // центр снимка по долготе
+//    ui->Lat_doubleSpinBox->setValue(topLeftAngleLat - ((topLeftAngleLat - bottomLeftAngleLat)/ 2)); // центр снимка по широте
 
-    // Позиция центра площади обхода
-    Pos0x = ui->Lon_doubleSpinBox->value();
-    Pos0y = ui->Lat_doubleSpinBox->value();
+//    // Позиция центра площади обхода
+//    Pos0x = ui->Lon_doubleSpinBox->value();
+//    Pos0y = ui->Lat_doubleSpinBox->value();
 }
 
 // Кнопка START
 void MainWindow::on_RUNButton_clicked()
-{
+{   
+    file_H.setFileName("D:/Projects/H.txt");
+    file_H.open(QFile::WriteOnly);
+
+    // Запуск qsrand
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+
     ui->RUNButton->setEnabled(false);
     if(img.empty())
         return;
@@ -93,18 +99,37 @@ void MainWindow::on_RUNButton_clicked()
     k = 0;
 
     // Считываем данные из интерфейса
-
     // Положение ЛА
-    tetta = qDegreesToRadians(ui->Kren_doubleSpinBox->value());
+    gamma = qDegreesToRadians(ui->Kren_doubleSpinBox->value());
     psi = qDegreesToRadians(ui->Kurs_doubleSpinBox->value());
-    gamma = qDegreesToRadians(ui->Tangazh_doubleSpinBox->value());
+    tetta = qDegreesToRadians(ui->Tangazh_doubleSpinBox->value());
 
-    double H = ui->H_doubleSpinBox->value();
+    // Позиция центра площади обхода
+    Pos0x = ui->Lon_doubleSpinBox->value();
+    Pos0y = ui->Lat_doubleSpinBox->value();
+
+//    // Постоянная высота полета
+    //double H = ui->H_doubleSpinBox->value();
+
+    // Зависимость H от S (убрать лишние переменные)
+    s0 = ui->s0_doubleSpinBox->value();
+    H = ui->h0_doubleSpinBox->value();
+
+    s1 = ui->s1_doubleSpinBox->value();
+    h1 = ui->h1_doubleSpinBox->value();
+
+    s2 = ui->s2_doubleSpinBox->value();
+    s3 = ui->s3_doubleSpinBox->value();
+
+
+
+    //Для зашумления
+    sigma = ui->sigma_doubleSpinBox->value();
+    Tc = ui->Tc_SpinBox->value();
 
     // Параметры ОСН
     fokus = ui->Fokus_doubleSpinBox->value();
     pixel = ui->Pixel_doubleSpinBox->value();
-    delta = (H * pixel) / fokus;
 
     // Кол-во итераций
     K = ui->K_spinBox->value();
@@ -123,6 +148,9 @@ void MainWindow::on_RUNButton_clicked()
     // Стартовая позиция
     Sx = Dx * qSin(phix) + Pos0x;
     Sy = Dy * qSin(phiy) + Pos0y;
+
+    // Пройденный путь
+    S = ui->S_doubleSpinBox->value();
 
     Xa = (K * phix / (2 * M_PI)) + K / 4;
     Ya = (K * phiy / (2 * M_PI)) + K / 4;
@@ -209,6 +237,24 @@ void MainWindow::on_Pause_pushButton_clicked()
 // Слот вычислений
 void MainWindow::on_Calculation()
 {
+    // Зашумление
+    double alpha = qExp(-ui->deltaT_doubleSpinBox->value() / ui->Tc_SpinBox->value());
+
+    double rnd_H = qrand() * 1.0 / RAND_MAX;
+    double rnd_gamma = qrand() * 1.0 / RAND_MAX;
+    double rnd_psi = qrand() * 1.0 / RAND_MAX;
+    double rnd_tetta = qrand() * 1.0 / RAND_MAX;
+
+    double X_H = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_H)) * qCos(2 * M_PI * rnd_H);
+    double X_gamma = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_gamma)) * qCos(2 * M_PI * rnd_gamma);
+    double X_psi = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_psi)) * qCos(2 * M_PI * rnd_psi);
+    double X_tetta = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_tetta)) * qCos(2 * M_PI * rnd_tetta);
+
+
+
+    qDebug() << "rnd_H = " << rnd_H;
+    qDebug() << "X_H = " << X_H;
+
     // Первый маршрут
     if (ui->Route_1_radioButton->isChecked())
     {
@@ -224,6 +270,10 @@ void MainWindow::on_Calculation()
         // Координаты ЛА
         Sx = Dx * qSin(phix) + Pos0x;
         Sy = Dy * qSin(phiy) + Pos0y;
+
+        S += qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2));
+        ui->S_doubleSpinBox->setValue(S);
+
 
         ui->Sx_doubleSpinBox->setValue(Sx);
         ui->Sy_doubleSpinBox->setValue(Sy);
@@ -246,8 +296,8 @@ void MainWindow::on_Calculation()
 
         // Крен
         if (k > 1)
-            tetta = (psi - psim) * 3;
-        ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(tetta));
+            gamma = (psi - psim) * 3;
+        ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(gamma));
     }
 
     // Второй маршрут
@@ -283,6 +333,42 @@ void MainWindow::on_Calculation()
         Sx = Mx + cS * (aX - Mx);
         Sy = My + cS * (aY - My);
 
+        S += qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2));
+        ui->S_doubleSpinBox->setValue(S);
+
+        double Y_H_tmp = Y_H;
+
+        // Рассчитываем высоту на момент S
+        if(S <= s1)
+            H = (S * h1) / s1;
+        if(S > s1 && S < s2)
+            H = h1;
+        if(S >= s2 && S < s3)
+            H = h1 * (s3 - S) / (s3 - s2);
+        if(S >= s3)
+            H = 0.0;
+
+       // qDebug() << "S = " << S;
+        qDebug() << "H = " << H;
+
+        //Добавляем шум
+        Y_H = qSqrt(1 - qPow(alpha, 2)) * X_H + alpha * Y_H_tmp;
+        H_shum = H + Y_H * ui->sigma_H_doubleSpinBox->value();
+
+        QTextStream stream_H(&file_H);
+        stream_H << H_shum << "\t" <<H << "\n";
+
+//        QFile file("C:/Dev/log.txt");
+//        if (file.open(QIODevice::Append)) {
+//           file.write(line);
+//        }
+//        file.close();
+
+        qDebug() << "Шум = " << Y_H;
+        qDebug() << "H зашумленный = " << H_shum;
+
+        ui->H_doubleSpinBox_2->setValue(H);
+
         ui->Sx_doubleSpinBox->setValue(Sx);
         ui->Sy_doubleSpinBox->setValue(Sy);
 
@@ -291,6 +377,8 @@ void MainWindow::on_Calculation()
         ui->w_doubleSpinBox->setValue(W);
 
         // Курс
+        double Y_psi_tmp = Y_psi;
+
         double psim = psi;
 
         psi =  5 * M_PI_2-qAtan2((Sy - My), (Sx - Mx));
@@ -301,15 +389,22 @@ void MainWindow::on_Calculation()
         while(psi > 2*M_PI)
             psi -= 2 * M_PI;
 
+        //Добавляем шум
+        Y_psi = qSqrt(1 - qPow(alpha, 2)) * X_psi + alpha * Y_psi_tmp;
+        psi_shum = psi + Y_psi * ui->sigma_Kurs_doubleSpinBox->value();
+
         ui->Kurs_doubleSpinBox->setValue(qRadiansToDegrees(psi));
 
         // Крен
+        double Y_gamma_tmp = Y_gamma;
         if (k > 0) // Почему для первого маршрута k > 1 ????
-            tetta = (psi - psim) * ui->c_spinBox->value();
-        ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(tetta));
+            gamma = (psi - psim) * ui->c_spinBox->value();
+        ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(gamma));
+
+        //Добавляем шум
+        Y_gamma = qSqrt(1 - qPow(alpha, 2)) * X_gamma + alpha * Y_gamma_tmp;
+        gamma_shum = psi + Y_psi * ui->sigma_Kren_doubleSpinBox->value();
     }
-
-
 
     QTime curTime(0, 0);
     curTime = curTime.addMSecs(k*0.2*1000);
@@ -326,10 +421,10 @@ void MainWindow::on_Calculation()
     Kurs_Y.push_back(psi * 180/M_PI);
 
     Kren_X.push_back(k * ui->deltaT_doubleSpinBox->value());
-    Kren_Y.push_back(tetta * 180/M_PI);
+    Kren_Y.push_back(gamma * 180/M_PI);
 
     Tangazh_X.push_back(k * ui->deltaT_doubleSpinBox->value());
-    Tangazh_Y.push_back(gamma * 180/M_PI);
+    Tangazh_Y.push_back(tetta * 180/M_PI);
 
     ui->customplot_W->graph(0)->setData(W_X, W_Y);
     ui->customplot_S->graph(0)->setData(S_X, S_Y);
@@ -343,19 +438,19 @@ void MainWindow::on_Calculation()
     ui->customplot_Kren->replot();
 
 
-    double tetta_Rx = -tetta;
-    double gamma_Rz = -gamma;
+    double gamma_Rx = -gamma;
+    double tetta_Rz = -tetta;
     double psi_Ry = psi - M_PI_2;
 
     //Инициируем массивы
     double Rx[3][3], Rz[3][3], Rxz[3][3], Ry[3][3], R[3][3], r[3][3];
 
     Rx[0][0] = 1; Rx[0][1] = 0;              Rx[0][2] = 0;
-    Rx[1][0] = 0; Rx[1][1] = qCos(tetta_Rx); Rx[1][2] = -qSin(tetta_Rx);
-    Rx[2][0] = 0; Rx[2][1] = qSin(tetta_Rx); Rx[2][2] = qCos(tetta_Rx);
+    Rx[1][0] = 0; Rx[1][1] = qCos(gamma_Rx); Rx[1][2] = -qSin(gamma_Rx);
+    Rx[2][0] = 0; Rx[2][1] = qSin(gamma_Rx); Rx[2][2] = qCos(gamma_Rx);
 
-    Rz[0][0] = qCos(gamma_Rz); Rz[0][1] = -qSin(gamma_Rz);  Rz[0][2] = 0;
-    Rz[1][0] = qSin(gamma_Rz); Rz[1][1] = qCos(gamma_Rz);   Rz[1][2] = 0;
+    Rz[0][0] = qCos(tetta_Rz); Rz[0][1] = -qSin(tetta_Rz);  Rz[0][2] = 0;
+    Rz[1][0] = qSin(tetta_Rz); Rz[1][1] = qCos(tetta_Rz);   Rz[1][2] = 0;
     Rz[2][0] = 0;              Rz[2][1] = 0;                Rz[2][2] = 1;
 
     Ry[0][0] = qCos(psi_Ry);  Ry[0][1] = 0; Ry[0][2] = qSin(psi_Ry);
@@ -441,7 +536,7 @@ void MainWindow::on_Calculation()
     Mat V_P3 = Mat(1, 3, CV_64FC1);
     Mat V_P4 = Mat(1, 3, CV_64FC1);
 
-    // Переход от осей XZ к осям XY
+    // Переход от осей XZ (маткада) к осям XY (экрана)
     V_P0 = M_r * V_P0_tmp.t();
     V_P1 = M_r * V_P1_tmp.t();
     V_P2 = M_r * V_P2_tmp.t();
@@ -452,21 +547,24 @@ void MainWindow::on_Calculation()
     double deltaX = (Sx - ((Pos0x - Dx)  - 1000 * pixSizeLon)) / pixSizeLon;
     double deltaY = (Sy - ((Pos0y + Dy) - 1000 * pixSizeLat)) / pixSizeLat;
 
+
+    double delta = (H * pixel) / fokus;
+
     // Координаты вершин снимка в OpenCV
-    double C0x = V_P0.at<double>(0,0) * delta + deltaX;
-    double C0y = -V_P0.at<double>(1,0) * delta + deltaY;
+    double C0x = V_P0.at<double>(0,0) * delta / pixSizeLon + deltaX;
+    double C0y = V_P0.at<double>(1,0) * delta / pixSizeLat + deltaY;
 
-    double C1x = V_P1.at<double>(0,0) * delta + deltaX;
-    double C1y = -V_P1.at<double>(1,0) * delta + deltaY;
+    double C1x = V_P1.at<double>(0,0) * delta / pixSizeLon + deltaX;
+    double C1y = V_P1.at<double>(1,0) * delta / pixSizeLat + deltaY;
 
-    double C2x = V_P2.at<double>(0,0) * delta + deltaX;
-    double C2y = -V_P2.at<double>(1,0) * delta + deltaY;
+    double C2x = V_P2.at<double>(0,0) * delta / pixSizeLon + deltaX;
+    double C2y = V_P2.at<double>(1,0) * delta / pixSizeLat + deltaY;
 
-    double C3x = V_P3.at<double>(0,0) * delta + deltaX;
-    double C3y = -V_P3.at<double>(1,0) * delta + deltaY;
+    double C3x = V_P3.at<double>(0,0) * delta / pixSizeLon + deltaX;
+    double C3y = V_P3.at<double>(1,0) * delta / pixSizeLat + deltaY;
 
-    double C4x = V_P4.at<double>(0,0) * delta + deltaX;
-    double C4y = -V_P4.at<double>(1,0) * delta + deltaY;
+    double C4x = V_P4.at<double>(0,0) * delta / pixSizeLon + deltaX;
+    double C4y = V_P4.at<double>(1,0) * delta / pixSizeLat + deltaY;
 
     QPolygon polygon = QPolygon()
             << QPoint(C1x, C1y)
@@ -484,85 +582,92 @@ void MainWindow::on_Calculation()
     point = QPoint((Sx - topLeftAngleLon)/ pixSizeLon - topleftx_px, (Sy - topLeftAngleLat)/ pixSizeLat - toplefty_px);
     ui->mygraphicsview->polygon->setPolygon(polygon);
 
-    // OpenCV точки
-    Point2f srcQuad[4], dstQuad[4];
-
-    Mat lambda( 2, 4, CV_32FC1 );
-    lambda = Mat::zeros( img.rows, img.cols, img.type() );
-
-    ///////////////////////////////////////////////////
-
-    srcQuad[0].x = C4x;  //src Top left
-    srcQuad[0].y = C4y;
-
-    srcQuad[1].x = C1x;  //src Bottom left
-    srcQuad[1].y = C1y;
-
-    srcQuad[2].x = C2x;  //src Bottom right
-    srcQuad[2].y = C2y;
-
-    srcQuad[3].x = C3x;  //src Top right
-    srcQuad[3].y = C3y;
-
-    ///////////////////////////////////////////////////
-    dstQuad[0].x = 0; //Top left
-    dstQuad[0].y = 0;
-
-    dstQuad[1].x = 0; //Bottom left
-    dstQuad[1].y = dst.rows - 1;
-
-    dstQuad[2].x = dst.cols - 1; //Bottom right
-    dstQuad[2].y = dst.rows - 1;
-
-    dstQuad[3].x = dst.cols - 1; //Top right
-    dstQuad[3].y = 0;
-    ///////////////////////////////////////////////////
-
-
-    float xMin = +FLT_MAX, yMin = +FLT_MAX;
-    float xMax = -FLT_MAX, yMax = -FLT_MAX;
-
-    for (int i = 0; i < 4; i++)
+    // Начинаем съемку с 30 м
+    if(H >= 30)
     {
-        xMin = qMin(srcQuad[i].x, xMin);
-        yMin = qMin(srcQuad[i].y, yMin);
+        // OpenCV точки
+        Point2f srcQuad[4], dstQuad[4];
 
-        xMax = qMax(srcQuad[i].x, xMax);
-        yMax = qMax(srcQuad[i].y, yMax);
+        Mat lambda( 2, 4, CV_32FC1 );
+        lambda = Mat::zeros( img.rows, img.cols, img.type() );
+
+        ///////////////////////////////////////////////////
+
+        srcQuad[0].x = C4x;  //src Top left
+        srcQuad[0].y = C4y;
+
+        srcQuad[1].x = C1x;  //src Bottom left
+        srcQuad[1].y = C1y;
+
+        srcQuad[2].x = C2x;  //src Bottom right
+        srcQuad[2].y = C2y;
+
+        srcQuad[3].x = C3x;  //src Top right
+        srcQuad[3].y = C3y;
+
+        ///////////////////////////////////////////////////
+        dstQuad[0].x = 0; //Top left
+        dstQuad[0].y = 0;
+
+        dstQuad[1].x = 0; //Bottom left
+        dstQuad[1].y = dst.rows - 1;
+
+        dstQuad[2].x = dst.cols - 1; //Bottom right
+        dstQuad[2].y = dst.rows - 1;
+
+        dstQuad[3].x = dst.cols - 1; //Top right
+        dstQuad[3].y = 0;
+        ///////////////////////////////////////////////////
+
+
+        float xMin = +FLT_MAX, yMin = +FLT_MAX;
+        float xMax = -FLT_MAX, yMax = -FLT_MAX;
+
+        for (int i = 0; i < 4; i++)
+        {
+            xMin = qMin(srcQuad[i].x, xMin);
+            yMin = qMin(srcQuad[i].y, yMin);
+
+            xMax = qMax(srcQuad[i].x, xMax);
+            yMax = qMax(srcQuad[i].y, yMax);
+        }
+
+        // Вырезаем ИОР из большого снимка
+        Rect roi(xMin, yMin, xMax - xMin, yMax - yMin);
+        Mat img_small = img(roi);
+        imshow(QString("ROI").toLocal8Bit().data(), img_small);
+
+        srcQuad[0].x -= xMin;  //src Top left
+        srcQuad[0].y -= yMin;
+
+        srcQuad[1].x -= xMin;  //src Top right
+        srcQuad[1].y -= yMin;
+
+        srcQuad[2].x -= xMin;  //src Bottom left
+        srcQuad[2].y -= yMin;
+
+        srcQuad[3].x -= xMin;  //src Bot right
+        srcQuad[3].y -= yMin;
+
+    //------------------------------------------------//
+
+        lambda = getPerspectiveTransform(srcQuad,  dstQuad);
+
+        warpPerspective(img_small, dst, lambda, dst.size());
+
+        imshow("Output", dst);
+
+        QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
+        ui->qdst_label->setPixmap(QPixmap::fromImage(qdst));
+
     }
 
-    // Вырезаем ИОР из большого снимка
-    Rect roi(xMin, yMin, xMax - xMin, yMax - yMin);
-qDebug() << "xMin" << xMin << xMax << yMin << yMax;
-//return;
-    Mat img_small = img(roi);
-    imshow(QString("ROI").toLocal8Bit().data(), img_small);
-
-    srcQuad[0].x -= xMin;  //src Top left
-    srcQuad[0].y -= yMin;
-
-    srcQuad[1].x -= xMin;  //src Top right
-    srcQuad[1].y -= yMin;
-
-    srcQuad[2].x -= xMin;  //src Bottom left
-    srcQuad[2].y -= yMin;
-
-    srcQuad[3].x -= xMin;  //src Bot right
-    srcQuad[3].y -= yMin;
-
-//------------------------------------------------//
-
-
-    lambda = getPerspectiveTransform(srcQuad,  dstQuad);
-
-    warpPerspective(img_small, dst, lambda, dst.size());
-
-    imshow("Output", dst);
-
     k++;
-    if (k == K)
+
+    if (k == K || H == 0.0)
     {
         timer->stop();
+        file_H.close();
         QMessageBox::information(this, "Информация", "Полет завершен!");
     }
 }

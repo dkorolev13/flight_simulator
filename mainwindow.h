@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>
 #include <QTime>
 #include <QTimer>
+#include <QFile>
 #include "qcustomplot.h"
 #include "gdal_utils.h"
 #include "mygraphicsview.h"
@@ -37,8 +38,13 @@ private:
 
     QPoint point;
 
+    QFile file_H;
+
     double pixSizeLon, pixSizeLat, topLeftAngleLon, topLeftAngleLat, phix, phiy, Sx, Sy,
-           Pos0x, Pos0y, Dx, Dy, W, psi, tetta, gamma, fokus, pixel, delta, Xa, Ya, topleftx_px, toplefty_px;
+           Pos0x, Pos0y, Dx, Dy, W, psi, gamma, tetta, fokus, pixel, Xa, Ya, topleftx_px, toplefty_px,
+           S, sigma, Tc, H, H_shum, psi_shum, gamma_shum, Y_H, Y_psi, Y_gamma;
+
+    double s0, h0, s1, h1, s2, s3;
 
     int K, k;
 

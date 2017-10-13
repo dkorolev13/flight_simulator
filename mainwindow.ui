@@ -171,7 +171,7 @@
            <item row="1" column="1">
             <widget class="QDoubleSpinBox" name="deltaT_doubleSpinBox">
              <property name="value">
-              <double>0.200000000000000</double>
+              <double>0.100000000000000</double>
              </property>
             </widget>
            </item>
@@ -212,12 +212,12 @@
            <item row="4" column="0">
             <widget class="QLabel" name="label_16">
              <property name="text">
-              <string>Кол-во периодов, dax</string>
+              <string>Кол-во периодов, fx</string>
              </property>
             </widget>
            </item>
            <item row="4" column="1">
-            <widget class="QDoubleSpinBox" name="dax_doubleSpinBox">
+            <widget class="QDoubleSpinBox" name="fx_doubleSpinBox">
              <property name="value">
               <double>1.000000000000000</double>
              </property>
@@ -226,12 +226,12 @@
            <item row="5" column="0">
             <widget class="QLabel" name="label_19">
              <property name="text">
-              <string>Кол-во периодов, day</string>
+              <string>Кол-во периодов, fy</string>
              </property>
             </widget>
            </item>
            <item row="5" column="1">
-            <widget class="QDoubleSpinBox" name="day_doubleSpinBox">
+            <widget class="QDoubleSpinBox" name="fy_doubleSpinBox">
              <property name="value">
               <double>1.000000000000000</double>
              </property>
@@ -260,7 +260,7 @@
            <item row="7" column="0">
             <widget class="QLabel" name="label_21">
              <property name="text">
-              <string>Начальная фаза, градус,ϕy</string>
+              <string>Начальная фаза, градус, ϕy</string>
              </property>
             </widget>
            </item>
@@ -468,6 +468,9 @@
             <property name="checked">
              <bool>true</bool>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup_2</string>
+            </attribute>
            </widget>
           </item>
           <item>
@@ -475,6 +478,9 @@
             <property name="text">
              <string>Маршрут 2</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup_2</string>
+            </attribute>
            </widget>
           </item>
          </layout>
@@ -1085,7 +1091,7 @@
         <string>START</string>
        </property>
        <property name="checkable">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -1325,17 +1331,134 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="qdst_label">
+   <widget class="QRadioButton" name="W_const_radioButton">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>350</y>
-      <width>201</width>
-      <height>151</height>
+      <x>450</x>
+      <y>70</y>
+      <width>161</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Постоянная скорость</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <attribute name="buttonGroup">
+     <string notr="true">buttonGroup</string>
+    </attribute>
+   </widget>
+   <widget class="QRadioButton" name="W_radioButton">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>100</y>
+      <width>171</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Непостоянная скорость</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+    <attribute name="buttonGroup">
+     <string notr="true">buttonGroup</string>
+    </attribute>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>750</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save settings</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_8">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>20</y>
+      <width>181</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Перемещение окна вывода</string>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_17">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_30">
+       <property name="text">
+        <string>X</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="X_spinBox"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_31">
+       <property name="text">
+        <string>Y</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="Y_spinBox"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label_42">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>349</x>
+      <y>430</y>
+      <width>104</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Путевая скорость</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="W_const_doubleSpinBox">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>430</y>
+      <width>58</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+    <property name="buttonSymbols">
+     <enum>QAbstractSpinBox::NoButtons</enum>
+    </property>
+    <property name="value">
+     <double>20.000000000000000</double>
     </property>
    </widget>
    <zorder>layoutWidget</zorder>
@@ -1352,7 +1475,12 @@
    <zorder>h1_doubleSpinBox</zorder>
    <zorder>s2_doubleSpinBox</zorder>
    <zorder>s3_doubleSpinBox</zorder>
-   <zorder>qdst_label</zorder>
+   <zorder>W_const_radioButton</zorder>
+   <zorder>W_radioButton</zorder>
+   <zorder>pushButton</zorder>
+   <zorder>groupBox_8</zorder>
+   <zorder>label_42</zorder>
+   <zorder>W_const_doubleSpinBox</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -1372,4 +1500,8 @@
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
+ </buttongroups>
 </ui>

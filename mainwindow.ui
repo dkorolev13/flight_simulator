@@ -1393,8 +1393,8 @@
      <rect>
       <x>660</x>
       <y>20</y>
-      <width>181</width>
-      <height>91</height>
+      <width>191</width>
+      <height>120</height>
      </rect>
     </property>
     <property name="title">
@@ -1420,6 +1420,29 @@
      </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="Y_spinBox"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_43">
+       <property name="text">
+        <string>Scale</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="Scale_spinBox">
+       <property name="decimals">
+        <number>3</number>
+       </property>
+       <property name="maximum">
+        <double>9.990000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.001000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -1461,6 +1484,35 @@
      <double>20.000000000000000</double>
     </property>
    </widget>
+   <widget class="QLabel" name="label_44">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>750</y>
+      <width>183</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Начальная фаза, градус</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="K_spinBox_2">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>750</y>
+      <width>79</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100000</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+   </widget>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
@@ -1481,6 +1533,8 @@
    <zorder>groupBox_8</zorder>
    <zorder>label_42</zorder>
    <zorder>W_const_doubleSpinBox</zorder>
+   <zorder>label_44</zorder>
+   <zorder>K_spinBox_2</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

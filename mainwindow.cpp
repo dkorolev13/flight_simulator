@@ -9,7 +9,6 @@
 #include <QTextStream>
 #include <QTime>
 #include "gdal_priv.h"
-//#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -29,6 +28,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->X_spinBox->setMaximum(QApplication::desktop()->size().width());
     ui->Y_spinBox->setMaximum(QApplication::desktop()->size().height());
+
+    ui->customplot_W->addGraph();
+    ui->customplot_S->addGraph();
+    ui->customplot_Kurs->addGraph();
+    ui->customplot_Kren->addGraph();
 }
 
 MainWindow::~MainWindow()
@@ -96,13 +100,12 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         if(imgFull.empty())
         {
             ui->RUNButton->setChecked(false);
-            //QMessageBox
+            QMessageBox::information(this, "Информация", "Выберите картинку!");
             return;
         }
 
         qdst_label->show();
         qdst_label->resize(ui->N2_doubleSpinBox->value(), ui->N1_doubleSpinBox->value());
-       // qdst_label->move((QApplication::desktop()->size().width() - qdst_label->size().width())/2, (QApplication::desktop()->size().height() - qdst_label->size().height())/2);
 
         ui->X_spinBox->setValue((QApplication::desktop()->size().width() - qdst_label->size().width())/2);
         ui->Y_spinBox->setValue((QApplication::desktop()->size().height() - qdst_label->size().height())/2);
@@ -114,7 +117,6 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
         k = 0;
-
 
         // Считываем данные из интерфейса
         // Положение ЛА
@@ -138,8 +140,6 @@ void MainWindow::on_RUNButton_clicked(bool checked)
 
         s2 = ui->s2_doubleSpinBox->value();
         s3 = ui->s3_doubleSpinBox->value();
-
-
 
         //Для зашумления
         sigma = ui->sigma_doubleSpinBox->value();
@@ -172,7 +172,6 @@ void MainWindow::on_RUNButton_clicked(bool checked)
 
         Xa = (K * phix / (2 * M_PI)) + K / 4;
         Ya = (K * phiy / (2 * M_PI)) + K / 4;
-
 
         // Координаты левого верхнего угла в пикселях с учетом рамки 1000 px
         topleftx_px = ((Pos0x - Dx) - topLeftAngleLon) / pixSizeLon - 1000;
@@ -211,26 +210,23 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         Tangazh_Y.clear();
 
         // Создаем полотно и оси графика W
-        ui->customplot_W->addGraph();
+
         ui->customplot_W->xAxis->setRange(0, K);
         ui->customplot_W->yAxis->setRange(0, 50); // ПОМЕНЯТЬ НА ПЕРЕМЕННУЮ
 
         // Создаем полотно и оси графика S
-        ui->customplot_S->addGraph();
         ui->customplot_S->xAxis->setRange((Pos0x - Dx) + 20, (Pos0x + Dx) + 20);
         ui->customplot_S->yAxis->setRange((Pos0y - Dy) + 20, (Pos0y + Dy) + 20);
         ui->customplot_S->graph(0)->setLineStyle(QCPGraph::lsNone);
         ui->customplot_S->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
 
         // Создаем полотно и оси графика psi (курса)
-        ui->customplot_Kurs->addGraph();
         ui->customplot_Kurs->xAxis->setRange(0, K);
         ui->customplot_Kurs->yAxis->setRange(0, 360);
         ui->customplot_Kurs->graph(0)->setLineStyle(QCPGraph::lsNone);
         ui->customplot_Kurs->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
 
         // Создаем полотно и оси графиков tetta(крена) и gamma(тангажа)
-        ui->customplot_Kren->addGraph();
         ui->customplot_Kren->xAxis->setRange(0, K);
         ui->customplot_Kren->yAxis->setRange(-5, 5);
         ui->customplot_Kren->graph(0)->setLineStyle(QCPGraph::lsNone);
@@ -250,7 +246,6 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         qdst_label->clear();
         ui->RUNButton->setText("START");
     }
-
 }
 
 // Кнопка PAUSE
@@ -551,8 +546,10 @@ void MainWindow::on_Calculation()
 
 
         QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
-        qdst_label->setPixmap(QPixmap::fromImage(qdst));
-        qdst_label->resize(qdst.size());
+        QPixmap qdst_pixmap = QPixmap::fromImage(qdst);
+        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
+        qdst_label->setPixmap(qdst_pixmap);
+        qdst_label->resize(qdst_pixmap.size());
 
     }
 
@@ -572,8 +569,13 @@ void MainWindow::route1_W_const()
     double L = ui->W_const_doubleSpinBox->value() * ui->deltaT_doubleSpinBox->value();
     qDebug() << "L = " << L;
 
-    double delta_phix = 2 * M_PI *L * (ui->fx_doubleSpinBox->value() / ui->Dx_doubleSpinBox->value() * 2);
-    double delta_phiy = 2 * M_PI *L * (ui->fy_doubleSpinBox->value() / ui->Dy_doubleSpinBox->value() * 2);
+//    double delta_phix = 2 * M_PI *L * (ui->fx_doubleSpinBox->value() / ui->Dx_doubleSpinBox->value() * 2);
+//    double delta_phiy = 2 * M_PI *L * (ui->fy_doubleSpinBox->value() / ui->Dy_doubleSpinBox->value() * 2);
+
+    double delta_phix = 2 * M_PI *L * ui->fx_doubleSpinBox->value() * 0.0005;
+    double delta_phiy = 2 * M_PI *L * ui->fy_doubleSpinBox->value() * 0.0005;
+
+
     qDebug() << "delta_phix = " << delta_phix;
     qDebug() << "delta_phiy = " << delta_phiy;
 
@@ -814,4 +816,16 @@ void MainWindow::on_X_spinBox_valueChanged(int arg1)
 void MainWindow::on_Y_spinBox_valueChanged(int arg1)
 {
     qdst_label->move(ui->X_spinBox->value(),arg1);
+}
+
+void MainWindow::on_Scale_spinBox_valueChanged(double arg1)
+{
+    if(!dst.empty() && ui->Pause_pushButton->isChecked())
+    {
+        QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
+        QPixmap qdst_pixmap = QPixmap::fromImage(qdst);
+        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
+        qdst_label->setPixmap(qdst_pixmap);
+        qdst_label->resize(qdst_pixmap.size());
+    }
 }

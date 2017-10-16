@@ -40,7 +40,7 @@ private slots:
 //    void route2_W_const();
     void route2_W();
 
-
+    void on_Scale_spinBox_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;

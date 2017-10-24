@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui serialport
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -15,11 +16,14 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     qcustomplot.cpp \
-    mygraphicsview.cpp
+    mygraphicsview.cpp \
+    binssender.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
-    mygraphicsview.h
+    mygraphicsview.h \
+    structs.h \
+    binssender.h
 
 FORMS    += \
     mainwindow.ui

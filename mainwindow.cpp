@@ -20,19 +20,43 @@ MainWindow::MainWindow(QWidget *parent) :
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(on_Calculation()));
 
+    binsSender = new BINSsender(this);
+
     // Обнуляем CV Mat'ы картинок
     img = imgFull = dst = NULL;
     qdst_label = new QLabel(this);
-    //qdst_label->setWindowModality(Qt::ApplicationModal);
     qdst_label->setWindowFlags(Qt::Dialog);
+    qdst_label->show();
 
-    ui->X_spinBox->setMaximum(QApplication::desktop()->size().width());
-    ui->Y_spinBox->setMaximum(QApplication::desktop()->size().height());
+    //ui->X_spinBox->setMaximum(QApplication::desktop()->size().width());
+    //ui->Y_spinBox->setMaximum(QApplication::desktop()->size().height());
 
     ui->customplot_W->addGraph();
-    ui->customplot_S->addGraph();
+    ui->customplot_W->yAxis->setLabel("W, м/с");
+    ui->customplot_W->graph(0)->setLineStyle(QCPGraph::lsLine);
+    ui->customplot_W->xAxis->setRange(0, 3000);
+    ui->customplot_W->yAxis->setRange(0, 100);
+    ui->customplot_W->setInteraction(QCP::iRangeZoom,true);
+    ui->customplot_W->setInteraction(QCP::iRangeDrag, true);
+
+    ui->customplot_S_H->addGraph();
+    ui->customplot_S_H->setInteraction(QCP::iRangeZoom,true);
+    ui->customplot_S_H->setInteraction(QCP::iRangeDrag, true);
+    ui->customplot_S_H->xAxis->setLabel("S, м");
+    ui->customplot_S_H->yAxis->setLabel("H, м");
+    ui->customplot_S_H->graph(0)->setLineStyle(QCPGraph::lsLine);
+
     ui->customplot_Kurs->addGraph();
-    ui->customplot_Kren->addGraph();
+    ui->customplot_Kurs->yAxis->setLabel("Курс, °");
+    ui->customplot_Kurs->yAxis->setRange(0, 370);
+
+    ui->customplot_Kren->addGraph()->setName("Kren");
+    ui->customplot_Kren->addGraph()->setName("Tangazh");
+    ui->customplot_Kren->graph(1)->setPen(QPen(Qt::red));
+    ui->customplot_Kren->legend->setVisible(true); //Включаем Легенду графика
+    ui->customplot_Kren->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop); // Устанавливаем Легенду в левый верхний угол графика
+    ui->customplot_Kren->yAxis->setLabel("Крен, Тангаж, ");
+    ui->customplot_Kren->yAxis->setRange(-180, 180);
 }
 
 MainWindow::~MainWindow()
@@ -97,6 +121,14 @@ void MainWindow::on_RUNButton_clicked(bool checked)
 {
     if(checked)
     {
+//        qDebug() << videoWriter.open(
+//                        "D:/Projects/flight.avi",
+//                        //VideoWriter::fourcc('D','I','V','X'),
+//                        //VideoWriter::fourcc('X','V','I','D'),
+//                        VideoWriter::fourcc('P','I','M','1'),
+//                        10.0,
+//                        cvSize(ui->N2_doubleSpinBox->value(), ui->N1_doubleSpinBox->value()));
+
         if(imgFull.empty())
         {
             ui->RUNButton->setChecked(false);
@@ -104,8 +136,7 @@ void MainWindow::on_RUNButton_clicked(bool checked)
             return;
         }
 
-        qdst_label->show();
-        qdst_label->resize(ui->N2_doubleSpinBox->value(), ui->N1_doubleSpinBox->value());
+        //qdst_label->resize(ui->N2_doubleSpinBox->value(), ui->N1_doubleSpinBox->value());
 
         ui->X_spinBox->setValue((QApplication::desktop()->size().width() - qdst_label->size().width())/2);
         ui->Y_spinBox->setValue((QApplication::desktop()->size().height() - qdst_label->size().height())/2);
@@ -116,7 +147,7 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         // Запуск qsrand
         qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
-        k = 0;
+        k = 0.0;
 
         // Считываем данные из интерфейса
         // Положение ЛА
@@ -128,18 +159,13 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         Pos0x = ui->Lon_doubleSpinBox->value();
         Pos0y = ui->Lat_doubleSpinBox->value();
 
-        // Постоянная высота полета
-        //double H = ui->H_doubleSpinBox->value();
-
         // Зависимость H от S (убрать лишние переменные)
-        s0 = ui->s0_doubleSpinBox->value();
-        H = ui->h0_doubleSpinBox->value();
+        //H = ui->H_max_doubleSpinBox->value();
 
         s1 = ui->s1_doubleSpinBox->value();
-        h1 = ui->h1_doubleSpinBox->value();
-
         s2 = ui->s2_doubleSpinBox->value();
         s3 = ui->s3_doubleSpinBox->value();
+        H_max = ui->H_max_doubleSpinBox->value();
 
         //Для зашумления
         sigma = ui->sigma_doubleSpinBox->value();
@@ -156,9 +182,14 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         Dx = ui->Dx_doubleSpinBox->value();
         Dy = ui->Dy_doubleSpinBox->value();
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // Начальная фаза
-        phix = qDegreesToRadians(ui->phix0_doubleSpinBox->value());
-        phiy = qDegreesToRadians(ui->phiy0_doubleSpinBox->value());
+        phix = ui->fx_doubleSpinBox->value() * 2 * M_PI * ui->k_spinBox->value() / ui->K_spinBox->value();
+        phiy = (ui->fy_doubleSpinBox->value() * 2 * M_PI * ui->k_spinBox->value() / ui->K_spinBox->value()) +  qDegreesToRadians(double(ui->F_spinBox->value()));
+
+        phix = phix - qFloor(phix / (2 * M_PI)) * 2 * M_PI;
+        phiy = phiy - qFloor(phiy / (2 * M_PI)) * 2 * M_PI;
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         // Путевая скорость
         W = ui->w_doubleSpinBox->value();
@@ -166,6 +197,10 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         // Стартовая позиция
         Sx = Dx * qSin(phix) + Pos0x;
         Sy = Dy * qSin(phiy) + Pos0y;
+
+        // Поправка на ветер
+        mW = ui->mW_doubleSpinBox->value();
+        aW = ui->aW_doubleSpinBox->value();
 
         // Пройденный путь
         S = 0.0;
@@ -209,31 +244,31 @@ void MainWindow::on_RUNButton_clicked(bool checked)
         Tangazh_X.clear();
         Tangazh_Y.clear();
 
+
+        // Создаем оси графика S_H
+        ui->customplot_S_H->xAxis->setRange(0, s3 + 25);
+        ui->customplot_S_H->yAxis->setRange(0, H_max + 25);
+
         // Создаем полотно и оси графика W
+        // ПОМЕНЯТЬ НА ПЕРЕМЕННУЮ
 
-        ui->customplot_W->xAxis->setRange(0, K);
-        ui->customplot_W->yAxis->setRange(0, 50); // ПОМЕНЯТЬ НА ПЕРЕМЕННУЮ
-
-        // Создаем полотно и оси графика S
-        ui->customplot_S->xAxis->setRange((Pos0x - Dx) + 20, (Pos0x + Dx) + 20);
-        ui->customplot_S->yAxis->setRange((Pos0y - Dy) + 20, (Pos0y + Dy) + 20);
-        ui->customplot_S->graph(0)->setLineStyle(QCPGraph::lsNone);
-        ui->customplot_S->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
+       // ui->customplot_W->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
 
         // Создаем полотно и оси графика psi (курса)
         ui->customplot_Kurs->xAxis->setRange(0, K);
-        ui->customplot_Kurs->yAxis->setRange(0, 360);
-        ui->customplot_Kurs->graph(0)->setLineStyle(QCPGraph::lsNone);
-        ui->customplot_Kurs->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
+
+        ui->customplot_Kurs->graph(0)->setLineStyle(QCPGraph::lsLine);
+        //ui->customplot_Kurs->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
 
         // Создаем полотно и оси графиков tetta(крена) и gamma(тангажа)
         ui->customplot_Kren->xAxis->setRange(0, K);
         ui->customplot_Kren->yAxis->setRange(-5, 5);
-        ui->customplot_Kren->graph(0)->setLineStyle(QCPGraph::lsNone);
-        ui->customplot_Kren->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
-        ui->customplot_Kren->addGraph();
-        ui->customplot_Kren->graph(1)->setLineStyle(QCPGraph::lsNone);
-        ui->customplot_Kren->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::red, 2));
+        ui->customplot_Kren->graph(0)->setLineStyle(QCPGraph::lsLine);
+       // ui->customplot_Kren->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 2));
+         //->setName("0");
+        ui->customplot_Kren->graph(1)->setLineStyle(QCPGraph::lsLine);
+        ui->customplot_Kren->graph(1)->setPen(QPen(Qt::red));
+      //  ui->customplot_Kren->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::red, 2));
 
         // Запускаем таймер
         timer->start(ui->deltaT_doubleSpinBox->value() * 1000);
@@ -271,25 +306,34 @@ void MainWindow::on_Calculation()
     X_H = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_H)) * qCos(2 * M_PI * rnd_H);
     X_gamma = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_gamma)) * qCos(2 * M_PI * rnd_gamma);
     X_psi = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_psi)) * qCos(2 * M_PI * rnd_psi);
-    double X_tetta = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_tetta)) * qCos(2 * M_PI * rnd_tetta);
+    X_tetta = ui->sigma_doubleSpinBox->value() * qSqrt(-2.0 * qLn(rnd_tetta)) * qCos(2 * M_PI * rnd_tetta);
 
     if(ui->Route_1_radioButton->isChecked())
-    {
-        if(ui->W_const_radioButton->isChecked())
-            route1_W_const();
-//        else
-//            route1_W_const();
-    }
+        route1_W();
     else
-    {
-        if(ui->W_radioButton->isChecked())
-            route2_W();
-    }
+        route2_W();
 
+    ISNoutSTRUCT struct_out;
+    //struct_out.SS = 0x0000802C;
+    struct_out.SS = 0x2C800000;
+    struct_out.Ax = 0;
+    struct_out.Ay = 0;
+    struct_out.Az = 0;
+    struct_out.Wx = 0;
+    struct_out.Wy = 0;
+    struct_out.Wz = 0;
+//    struct_out.gamma = gamma_shum;
+//    struct_out.psi = psi_shum;
+//    struct_out.tetta = tetta_shum;
+    struct_out.gamma = qRadiansToDegrees(gamma);
+    struct_out.psi = qRadiansToDegrees(psi);
+    struct_out.tetta = qRadiansToDegrees(tetta);
+    struct_out.B_wgs84 = Sy;
+    struct_out.L_wgs84 = Sx;
+//    struct_out.H_wgs84 = H_shum;
+    struct_out.H_wgs84 = H;
 
-//        else
-//            route2_W_const();
-//    }
+    binsSender->sendNavData(struct_out);
 
     QTime curTime(0, 0);
     curTime = curTime.addMSecs(k*0.2*1000);
@@ -299,8 +343,8 @@ void MainWindow::on_Calculation()
     W_X.push_back(k * ui->deltaT_doubleSpinBox->value());
     W_Y.push_back(W);
 
-    S_X.push_back(Sx);
-    S_Y.push_back(Sy);
+    S_X.push_back(S);
+    S_Y.push_back(H);
 
     Kurs_X.push_back(k * ui->deltaT_doubleSpinBox->value());
     Kurs_Y.push_back(psi * 180/M_PI);
@@ -312,16 +356,15 @@ void MainWindow::on_Calculation()
     Tangazh_Y.push_back(tetta * 180/M_PI);
 
     ui->customplot_W->graph(0)->setData(W_X, W_Y);
-    ui->customplot_S->graph(0)->setData(S_X, S_Y);
+    ui->customplot_S_H->graph(0)->setData(S_X, S_Y);
     ui->customplot_Kurs->graph(0)->setData(Kurs_X, Kurs_Y);
     ui->customplot_Kren->graph(0)->setData(Kren_X, Kren_Y);
     ui->customplot_Kren->graph(1)->setData(Tangazh_X, Tangazh_Y);
 
     ui->customplot_W->replot();
-    ui->customplot_S->replot();
     ui->customplot_Kurs->replot();
     ui->customplot_Kren->replot();
-
+    ui->customplot_S_H->replot();
 
     double gamma_Rx = -gamma;
     double tetta_Rz = -tetta;
@@ -432,7 +475,6 @@ void MainWindow::on_Calculation()
     double deltaX = (Sx - ((Pos0x - Dx)  - 1000 * pixSizeLon)) / pixSizeLon;
     double deltaY = (Sy - ((Pos0y + Dy) - 1000 * pixSizeLat)) / pixSizeLat;
 
-
     double delta = (H * pixel) / fokus;
 
     // Координаты вершин снимка в OpenCV
@@ -504,7 +546,6 @@ void MainWindow::on_Calculation()
         dstQuad[3].y = 0;
         ///////////////////////////////////////////////////
 
-
         float xMin = +FLT_MAX, yMin = +FLT_MAX;
         float xMax = -FLT_MAX, yMax = -FLT_MAX;
 
@@ -520,82 +561,68 @@ void MainWindow::on_Calculation()
         // Вырезаем ИОР из большого снимка
         Rect roi(qFloor(xMin), qFloor(yMin), qCeil(xMax - xMin), qCeil(yMax - yMin));
         Mat img_small = img(roi);
-        //imshow(QString("ROI").toLocal8Bit().data(), img_small);
+        if(!img_small.empty())
+        {
+            //imshow(QString("ROI").toLocal8Bit().data(), img_small);
 
-        srcQuad[0].x -= xMin;  //src Top left
-        srcQuad[0].y -= yMin;
+            srcQuad[0].x -= xMin;  //src Top left
+            srcQuad[0].y -= yMin;
 
-        srcQuad[1].x -= xMin;  //src Top right
-        srcQuad[1].y -= yMin;
+            srcQuad[1].x -= xMin;  //src Top right
+            srcQuad[1].y -= yMin;
 
-        srcQuad[2].x -= xMin;  //src Bottom left
-        srcQuad[2].y -= yMin;
+            srcQuad[2].x -= xMin;  //src Bottom left
+            srcQuad[2].y -= yMin;
 
-        srcQuad[3].x -= xMin;  //src Bot right
-        srcQuad[3].y -= yMin;
+            srcQuad[3].x -= xMin;  //src Bot right
+            srcQuad[3].y -= yMin;
 
-    //------------------------------------------------//
+        //------------------------------------------------//
 
-        lambda = getPerspectiveTransform(srcQuad,  dstQuad);
+            lambda = getPerspectiveTransform(srcQuad,  dstQuad);
 
-        warpPerspective(img_small, dst, lambda, dst.size());
+            warpPerspective(img_small, dst, lambda, dst.size());
 
-        //imshow("Output", dst);
-        moveWindow("Output", 100, 100);
+            //imshow("Output", dst);
+            //moveWindow("Output", 100, 100);
 
+//            Mat colorDst = dst.clone();
+//            cvtColor(dst, colorDst, CV_COLOr),
+//            videoWriter.write(dst);
 
+            if(!dst.empty() && !ui->adjustment_checkbox->isChecked())
+            {
+                QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
+                QPixmap qdst_pixmap = QPixmap::fromImage(qdst);
+                qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
+                qdst_label->setPixmap(qdst_pixmap);
+                qdst_label->resize(qdst_pixmap.size());
+            }
 
-        QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
-        QPixmap qdst_pixmap = QPixmap::fromImage(qdst);
-        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
-        qdst_label->setPixmap(qdst_pixmap);
-        qdst_label->resize(qdst_pixmap.size());
-
+        }
     }
+
+
 
     k++;
 
-    if (k == K/* || H == 0.0*/)
+    if (k == K || H == 0.0)
     {
+//        videoWriter.release();
         timer->stop();
         file_H.close();
         QMessageBox::information(this, "Информация", "Полет завершен!");
     }
 }
 
-// Маршрут 1 для случая с постоянной скоростью
-void MainWindow::route1_W_const()
+// Маршрут 1
+void MainWindow::route1_W()
 {
-    double L = ui->W_const_doubleSpinBox->value() * ui->deltaT_doubleSpinBox->value();
-    qDebug() << "L = " << L;
-
-//    double delta_phix = 2 * M_PI *L * (ui->fx_doubleSpinBox->value() / ui->Dx_doubleSpinBox->value() * 2);
-//    double delta_phiy = 2 * M_PI *L * (ui->fy_doubleSpinBox->value() / ui->Dy_doubleSpinBox->value() * 2);
-
-    double delta_phix = 2 * M_PI *L * ui->fx_doubleSpinBox->value() * 0.0005;
-    double delta_phiy = 2 * M_PI *L * ui->fy_doubleSpinBox->value() * 0.0005;
-
-
-    qDebug() << "delta_phix = " << delta_phix;
-    qDebug() << "delta_phiy = " << delta_phiy;
-
-    double dx = ui->Dx_doubleSpinBox->value() * ui->fx_doubleSpinBox->value() * qCos(phix);
-    double dy = ui->Dy_doubleSpinBox->value() * ui->fy_doubleSpinBox->value() * qCos(phiy);
-    qDebug() << "dx = " << dx;
-    qDebug() << "dy = " << dy;
-
-    double alphak = qAtan2(dy, dx);
-    qDebug() << "alphak = " << qRadiansToDegrees(alphak);
-
-    double dphix = qAbs(delta_phix * qCos(alphak));
-    double dphiy = qAbs(delta_phiy * qSin(alphak));
-    qDebug() << "dphix = " << dphix;
-    qDebug() << "dphiy = " << dphiy;
+    double dphix = ui->fx_doubleSpinBox->value() * 2 * M_PI / ui->K_spinBox->value();
+    double dphiy = ui->fy_doubleSpinBox->value() * 2 * M_PI / ui->K_spinBox->value();
 
     phix += dphix;
     phiy += dphiy;
-    qDebug() << "phix = " << phix;
-    qDebug() << "phiy = " << phiy;
 
     double Mx = Sx;
     double My = Sy;
@@ -606,30 +633,46 @@ void MainWindow::route1_W_const()
 
     S += qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2));
     ui->S_doubleSpinBox->setValue(S);
+    ui->S_label->setText(QString("S = %1 м").arg(S, 0, 'f', 2));
+
+    double Y_H_tmp = Y_H;
 
     // Рассчитываем высоту на момент S
     if(S <= s1)
-        H = (S * h1) / s1;
+        H = (S * H_max) / s1;
     if(S > s1 && S < s2)
-        H = h1;
+        H = H_max;
     if(S >= s2 && S < s3)
-        H = h1 * (s3 - S) / (s3 - s2);
+        H = H_max * (s3 - S) / (s3 - s2);
     if(S >= s3)
         H = 0.0;
 
-    qDebug() << H << S;
-    ui->H_doubleSpinBox_2->setValue(H);
+    //ui->H_doubleSpinBox->setValue(H);
+    ui->H_label->setText(QString("H = %1 м").arg(H, 0, 'f', 2));
 
-    ui->Sx_doubleSpinBox->setValue(Sx);
-    ui->Sy_doubleSpinBox->setValue(Sy);
+    //ui->Sx_doubleSpinBox->setValue(Sx);
+    ui->Lon_label->setText(QString("Lon = %1 м").arg(Sx, 0, 'f', 2));
+    //ui->Sy_doubleSpinBox->setValue(Sy);
+    ui->Lat_label->setText(QString("Lat = %1 м").arg(Sy, 0, 'f', 2));
+
+    //Добавляем шум
+    Y_H = qSqrt(1 - qPow(alpha, 2)) * X_H + alpha * Y_H_tmp;
+    H_shum = H + Y_H * ui->sigma_H_doubleSpinBox->value();
+
+    QTextStream stream_H(&file_H);
+    stream_H << H_shum << "\t" <<H << "\n";
 
     // Путевая скорость
     W = (qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2))) / ui->deltaT_doubleSpinBox->value();
     ui->w_doubleSpinBox->setValue(W);
-    qDebug() << "W = " << W;
+    ui->W_label->setText(QString("W = %1 м/c").arg(W, 0, 'f', 2));
+
 
     // Курс
     double psim = psi;
+
+    double Y_psi_tmp = Y_psi;
+
     psi =  5 * M_PI_2-qAtan2((Sy - My), (Sx - Mx));
 
     if(psi < 0)
@@ -638,83 +681,63 @@ void MainWindow::route1_W_const()
     while(psi > 2*M_PI)
         psi -= 2 * M_PI;
 
-    ui->Kurs_doubleSpinBox->setValue(qRadiansToDegrees(psi));
+    // Учитываем ветер
+    WL = qSqrt(qPow(mW, 2) + qPow(W, 2) - 2 * mW * W * qCos(qDegreesToRadians(aW) - psi )); // продольная скорость ИЛИ СДЕЛАТЬ ЛОКАЛЬНОЙ ????
+    as = qAsin(mW * qSin(qDegreesToRadians(aW) - psi) / WL); // угол сноса РАЗОБРАТЬСЯ С РАДИАНАМИ И ГРАДУСАМИ
+
+    qDebug() << "WL = " << WL;
+    qDebug() << "W = " << W;
+    qDebug() << "угол сноса" << qRadiansToDegrees(as);
+
+    //ui->Ugol_snosa_doubleSpinBox->setValue(qRadiansToDegrees(as)) ;
+    ui->Ugol_snosa_label->setText(QString("Угол сноса = %1 °").arg(qRadiansToDegrees(as), 0, 'f', 2));
+
+    psi = psi - qDegreesToRadians(as);
+
+    //Добавляем шум
+    Y_psi = qSqrt(1 - qPow(alpha, 2)) * X_psi + alpha * Y_psi_tmp;
+    psi_shum = psi + Y_psi * ui->sigma_Kurs_doubleSpinBox->value();
+
+    //ui->Kurs_doubleSpinBox->setValue(qRadiansToDegrees(psi));
+    ui->Kurs_label->setText(QString("Курс = %1 °").arg(qRadiansToDegrees(psi), 0, 'f', 2));
 
     // Крен
+    double Y_gamma_tmp = Y_gamma;
     if (k > 1)
         gamma = (psi - psim) * 3;
-    ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(gamma));
+    //ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(gamma));
+    ui->Kren_label->setText(QString("Крен = %1 °").arg(qRadiansToDegrees(gamma), 0, 'f', 2));
+
+    //Добавляем шум
+    Y_gamma = qSqrt(1 - qPow(alpha, 2)) * X_gamma + alpha * Y_gamma_tmp;
+    gamma_shum = psi + Y_psi * ui->sigma_Kren_doubleSpinBox->value();
+
+    // Тангаж
+
+    // Рассчитываем тангаж на момент S
+    if(S <= s1)
+//        tetta = qDegreesToRadians(10.0);
+        tetta = qAtan(H_max / s1);
+        qDebug() << "H_max =" << H_max;
+        qDebug() << "s1 =" << s1;
+        qDebug() << "tetta = " << qRadiansToDegrees(tetta);
+    if(S > s1 && S < s2)
+        tetta = qDegreesToRadians(0.0);
+    if(S >= s2 && S < s3)
+//        tetta = qDegreesToRadians(-10.0);
+        tetta = -qAtan(H_max / (s3 - s2));
+    if(S >= s3)
+        tetta = qDegreesToRadians(0.0);
+
+    double Y_tetta_tmp = Y_tetta;
+    ui->Tangazh_label->setText(QString("Тангаж = %1 °").arg(qRadiansToDegrees(tetta), 0, 'f', 2));
+
+    //Добавляем шум
+    Y_tetta = qSqrt(1 - qPow(alpha, 2)) * X_tetta + alpha * Y_tetta_tmp;
+    tetta_shum = tetta + Y_tetta * ui->sigma_Tangazh_doubleSpinBox->value();
 }
 
-// Маршрут 1 для случая с непостоянной скоростью
-//void MainWindow::route1_W()
-//{
-//    double dphix = (ui->fx_doubleSpinBox->value() * 2 * M_PI) / K;
-//    double dphiy = (ui->fy_doubleSpinBox->value() * 2 * M_PI) / K;
-
-//    phix += dphix;
-//    phiy += dphiy;
-
-//    double Mx = Sx;
-//    double My = Sy;
-
-//    // Координаты ЛА
-//    Sx = Dx * qSin(phix) + Pos0x;
-//    Sy = Dy * qSin(phiy) + Pos0y;
-
-//    S += qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2));
-//    ui->S_doubleSpinBox->setValue(S);
-
-
-//    ui->Sx_doubleSpinBox->setValue(Sx);
-//    ui->Sy_doubleSpinBox->setValue(Sy);
-
-//    // Путевая скорость
-//    W = (qSqrt(qPow((Sx - Mx), 2) + qPow((Sy - My), 2))) / ui->deltaT_doubleSpinBox->value();
-//    ui->w_doubleSpinBox->setValue(W);
-
-//    // Курс
-//    double psim = psi;
-//    psi =  5 * M_PI_2-qAtan2((Sy - My), (Sx - Mx));
-
-//    if(psi < 0)
-//        psi += 2 * M_PI;
-
-//    while(psi > 2*M_PI)
-//        psi -= 2 * M_PI;
-
-//    ui->Kurs_doubleSpinBox->setValue(qRadiansToDegrees(psi));
-
-//    // Крен
-//    if (k > 1)
-//        gamma = (psi - psim) * 3;
-//    ui->Kren_doubleSpinBox->setValue(qRadiansToDegrees(gamma));
-
-//}
-
-// Маршрут 2 для случая с постоянной скоростью
-//void MainWindow::route2_W_const()
-//{
-//    double aX = 0.0;
-//    double aY = 0.0;
-
-//    Xa = qFloor(Xa + ui->fx_doubleSpinBox->value()) % K;
-//    Ya = qFloor(Ya + ui->fy_doubleSpinBox->value()) % K;
-
-//    if (Xa < (K / 2))
-//    {
-//        aX = Xa - K / 4;
-//    }
-//    else aX = (K - Xa) - K / 4;
-
-//    if (Ya < (K / 2))
-//    {
-//        aY = Ya - K / 4;
-//    }
-//    else aY = (K - Ya) - K / 4;
-//}
-
-// Маршрут 2 для случая с непостоянной скоростью
+// Маршрут 2
 void MainWindow::route2_W()
 {
     double aX = 0.0;
@@ -754,11 +777,11 @@ void MainWindow::route2_W()
 
     // Рассчитываем высоту на момент S
     if(S <= s1)
-        H = (S * h1) / s1;
+        H = (S * H_max) / s1;
     if(S > s1 && S < s2)
-        H = h1;
+        H = H_max;
     if(S >= s2 && S < s3)
-        H = h1 * (s3 - S) / (s3 - s2);
+        H = H_max * (s3 - S) / (s3 - s2);
     if(S >= s3)
         H = 0.0;
 
@@ -769,7 +792,7 @@ void MainWindow::route2_W()
     QTextStream stream_H(&file_H);
     stream_H << H_shum << "\t" <<H << "\n";
 
-    ui->H_doubleSpinBox_2->setValue(H);
+    ui->H_doubleSpinBox->setValue(H);
 
     ui->Sx_doubleSpinBox->setValue(Sx);
     ui->Sy_doubleSpinBox->setValue(Sy);
@@ -820,10 +843,58 @@ void MainWindow::on_Y_spinBox_valueChanged(int arg1)
 
 void MainWindow::on_Scale_spinBox_valueChanged(double arg1)
 {
-    if(!dst.empty() && ui->Pause_pushButton->isChecked())
+    if(ui->adjustment_checkbox->isChecked())
+    {
+        QPixmap qdst_pixmap = QPixmap::fromImage(adjustmentImage);
+        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
+        qdst_label->setPixmap(qdst_pixmap);
+        qdst_label->resize(qdst_pixmap.size());
+    }
+    else if(!dst.empty() && ui->Pause_pushButton->isChecked())
     {
         QImage qdst( dst.data, dst.cols, dst.rows, static_cast<int>(dst.step), QImage::Format_Grayscale8);
         QPixmap qdst_pixmap = QPixmap::fromImage(qdst);
+        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= arg1, Qt::KeepAspectRatio);
+        qdst_label->setPixmap(qdst_pixmap);
+        qdst_label->resize(qdst_pixmap.size());
+    }
+}
+
+void MainWindow::on_openButton_2_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Выбор эталонного изображения", QApplication::applicationDirPath(), "Изображения (*.bmp *.jpg *.jpeg *.png)");
+    if(fileName.isEmpty())
+        return;
+
+    Mat smallFrame = imread(fileName.toStdString().data(), IMREAD_GRAYSCALE);
+    if(smallFrame.empty())
+        return;
+
+    uint meanVal = mean(smallFrame)[0];
+
+    adjustmentImage = QImage(640, 480, QImage::Format_Grayscale8);
+    adjustmentImage.fill(meanVal);
+
+    QImage qImgSmallFrame(smallFrame.data, smallFrame.cols, smallFrame.rows, static_cast<int>(smallFrame.step), QImage::Format_Grayscale8);
+    QPainter p;
+    p.begin(&adjustmentImage);
+    p.drawImage((640-qImgSmallFrame.width())/2, (480-qImgSmallFrame.height())/2, qImgSmallFrame);
+    p.end();
+
+    if(ui->adjustment_checkbox->isChecked())
+    {
+        QPixmap qdst_pixmap = QPixmap::fromImage(adjustmentImage);
+        qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
+        qdst_label->setPixmap(qdst_pixmap);
+        qdst_label->resize(qdst_pixmap.size());
+    }
+}
+
+void MainWindow::on_adjustment_checkbox_clicked(bool checked)
+{
+    if(checked)
+    {
+        QPixmap qdst_pixmap = QPixmap::fromImage(adjustmentImage);
         qdst_pixmap = qdst_pixmap.scaled(qdst_pixmap.size() *= ui->Scale_spinBox->value(), Qt::KeepAspectRatio);
         qdst_label->setPixmap(qdst_pixmap);
         qdst_label->resize(qdst_pixmap.size());
